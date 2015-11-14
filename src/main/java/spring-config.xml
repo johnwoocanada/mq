@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jms="http://www.springframework.org/schema/jms" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+	<bean id="jmsConsumer" class="john.jms.JMSListener" />
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="mqConnectionFactory" />
+		<property name="defaultDestinationName" value="T1.QUEUE"/>
+		<property name="receiveTimeout" value="120"/>
+	</bean>
+
+	<jms:listener-container connection-factory="mqConnectionFactory">
+		<jms:listener id="listener1" destination="T1.QUEUE" ref="jmsConsumer"
+			method="echo" />
+	</jms:listener-container>
+	<!-- WebSphere MQ Connection Factory -->
+	<bean id="mqConnectionFactory" class="com.ibm.mq.jms.MQQueueConnectionFactory">
+		<property name="hostName">
+			<value>localhost</value>
+		</property>
+		<property name="port">
+			<value>1414</value>
+		</property>
+		<property name="queueManager">
+			<value>john.queue.manager</value>
+		</property>
+		<property name="transportType">
+			<value>1</value>
+		</property>
+	</bean>
+	<bean id="jmsQueueConnectionFactory"
+		class="org.springframework.jms.connection.SingleConnectionFactory">
+		<property name="targetConnectionFactory">
+			<ref bean="mqConnectionFactory" />
+		</property>
+	</bean>
+
+	<!-- <bean id="jmsConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory"> 
+		<property name="brokerURL" value="tcp://JmsServer:61616" /> </bean> -->
+</beans>
